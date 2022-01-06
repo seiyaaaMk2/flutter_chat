@@ -4,31 +4,12 @@
 // found in the LICENSE file.
 
 import 'package:flutter/material.dart';
+import 'package:flutter_chat/screen/view/scaffold_snackbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_chat/screen/chat_page.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
-
-/// Helper class to show a snackbar using the passed context.
-class ScaffoldSnackbar {
-  ScaffoldSnackbar(this._context);
-  final BuildContext _context;
-
-  /// The scaffold of current context.
-  factory ScaffoldSnackbar.of(BuildContext context) {
-    return ScaffoldSnackbar(context);
-  }
-
-  /// Helper method to show a SnackBar.
-  void show(String message) {
-    ScaffoldMessenger.of(_context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(content: Text(message)),
-      );
-  }
-}
 
 /// Entrypoint example for various sign-in flows with Firebase.
 class SignInPage extends StatefulWidget {
@@ -384,13 +365,13 @@ class _EmailPasswordFormState extends State<_EmailPasswordForm> {
         password: _passwordController.text,
       ))
           .user!;
-      ScaffoldSnackbar.of(context).show('${user.email} signed in');
+      ScaffoldSnackbar.of(context).show('${user.email} でサインインしました');
       if (user != null) {
         Navigator.pushNamed(context, ChatPage.id);
       }
     } catch (e) {
       ScaffoldSnackbar.of(context)
-          .show('Failed to sign in with Email & Password');
+          .show(e.toString() + '/nサインインに失敗しました');
     }
   }
 }
