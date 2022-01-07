@@ -17,7 +17,7 @@ class MessageLine extends StatelessWidget {
       required this.isMine});
 
   String messageTime() {
-    DateFormat outputFormat = DateFormat('MM:dd');
+    DateFormat outputFormat = DateFormat('HH:mm');
     return outputFormat.format(time.toDate());
   }
 
@@ -71,6 +71,7 @@ class MessageLine extends StatelessWidget {
                    Text(
                     text,
                     softWrap: true,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: isMine ? Colors.white : Colors.black54,
                       fontSize: 15.0,
