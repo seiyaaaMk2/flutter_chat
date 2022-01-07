@@ -5,6 +5,8 @@ import 'package:firebase_core/firebase_core.dart';
 import './screen/welcome_page.dart';
 import './screen/signin_page.dart';
 import './screen/register_page.dart';
+import './screen/home_page.dart';
+import './screen/enter_room_page.dart';
 import './screen/chat_page.dart';
 
 void main() async {
@@ -23,6 +25,8 @@ class MyApp extends StatelessWidget {
         WelcomePage.id: (context) => WelcomePage(),
         RegisterPage.id: (context) => RegisterPage(),
         SignInPage.id: (context) => SignInPage(),
+        HomePage.id: (context) => HomePage(),
+        EnterRoomPage.id: (context) => EnterRoomPage(),
         ChatPage.id: (context) => ChatPage(),
       },
     );

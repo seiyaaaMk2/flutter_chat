@@ -6,7 +6,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/screen/view/scaffold_snackbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_chat/screen/chat_page.dart';
+import 'package:flutter_chat/screen/home_page.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -367,7 +367,7 @@ class _EmailPasswordFormState extends State<_EmailPasswordForm> {
           .user!;
       ScaffoldSnackbar.of(context).show('${user.email} でサインインしました');
       if (user != null) {
-        Navigator.pushNamed(context, ChatPage.id);
+        Navigator.pushNamed(context, HomePage.id);
       }
     } catch (e) {
       ScaffoldSnackbar.of(context)

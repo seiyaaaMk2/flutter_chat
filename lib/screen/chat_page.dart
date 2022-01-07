@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_chat/model/chat_room_manager.dart';
 import './view/message_line.dart';
 
 final _db = FirebaseFirestore.instance;
@@ -9,7 +10,7 @@ User _user = _auth.currentUser!;
 
 class ChatPage extends StatefulWidget {
   static const String id = 'chat_page';
-  final String title = 'Chat';
+  String title = 'Chat Room: ${ChatRoomManager().roomID}';
 
   @override
   _ChatPageState createState() => _ChatPageState();
@@ -60,7 +61,7 @@ class _ChatPageState extends State<ChatPage> {
                         contentPadding: EdgeInsets.symmetric(
                             vertical: 10.0, horizontal: 20.0
                         ),
-                        hintText: 'テキストを入力',
+                        hintText: '${ChatRoomManager().roomID}にテキストを入力',
                         border: InputBorder.none,
                       ),
                     ),
@@ -68,7 +69,7 @@ class _ChatPageState extends State<ChatPage> {
                   ElevatedButton(
                     onPressed: () {
                       messageTextController.clear();
-                      _db.collection('rooms').doc('1111').collection('messages').add({
+                      _db.collection('rooms').doc(ChatRoomManager().roomID).collection('messages').add({
                         'message' : messageText,
                         'sender' : _user.email,
                         'time' : FieldValue.serverTimestamp(),
@@ -98,7 +99,7 @@ class MessageStream extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot> (
       // stream: _db.collection('messages').orderBy('time', descending: true).limit(50).snapshots(),
-      stream: _db.collection('rooms').doc('1111').collection('messages').orderBy('time', descending: true).limit(50).snapshots(),
+      stream: _db.collection('rooms').doc(ChatRoomManager().roomID).collection('messages').orderBy('time', descending: true).limit(50).snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return Center(

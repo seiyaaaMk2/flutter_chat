@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_chat/screen/home_page.dart';
 import 'package:flutter_chat/screen/register_page.dart';
 import 'package:flutter_chat/screen/signin_page.dart';
 import 'package:flutter_signin_button/button_builder.dart';
@@ -35,10 +36,19 @@ class WelcomePage extends StatelessWidget {
             ),
             padding: const EdgeInsets.all(16),
             alignment: Alignment.center,
+          ),
+          Container(
+            child: ElevatedButton(
+              onPressed: (){
+                Navigator.pushNamed(context, HomePage.id);
+              },
+              child: Text(
+                  "ログインなしでホーム画面へ(検証用)"
+              ),
+            ),
           )
         ],
       ),
     );
   }
-
 }
