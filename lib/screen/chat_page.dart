@@ -33,10 +33,10 @@ class _ChatPageState extends State<ChatPage> {
         actions: <Widget>[
           IconButton(
               onPressed: (){
-                _auth.signOut();
+                _db.collection('rooms').doc(ChatRoomManager().roomID).delete();
                 Navigator.pop(context);
               },
-              icon: Icon(Icons.close))
+              icon: Icon(Icons.delete_forever))
         ],
         title: Text(widget.title),
         backgroundColor: Colors.lightBlueAccent,
