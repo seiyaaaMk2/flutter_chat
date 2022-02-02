@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_chat/model/chat_room_manager.dart';
+import 'package:flutter_chat/screen/view/scaffold_snackbar.dart';
 import './view/message_line.dart';
 
 final _db = FirebaseFirestore.instance;
@@ -32,9 +33,26 @@ class _ChatPageState extends State<ChatPage> {
         leading: null,
         actions: <Widget>[
           IconButton(
-              onPressed: (){
-                _db.collection('rooms').doc(ChatRoomManager().roomID).delete();
-                Navigator.pop(context);
+              onPressed: () async {
+                await showDialog<int> (
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text('ID:${ChatRoomManager().roomID} のチャットルームを削除します。'),
+                      content: Text('よろしいですか？'),
+                      actions: [
+                        ElevatedButton(onPressed: () {
+                          _db.collection('rooms').doc(ChatRoomManager().roomID).delete();
+                          Navigator.pop(context);
+                          ScaffoldSnackbar.of(context).show('ID:${ChatRoomManager().roomID} のチャットルームを削除しました');
+                          Navigator.of(context).pop();
+                        }, child: Text('削除する')),
+                      ElevatedButton(onPressed: () => { Navigator.of(context).pop() }, child: Text('キャンセル'))
+                      ],
+                    );
+                  },
+
+                );
               },
               icon: Icon(Icons.delete_forever))
         ],
