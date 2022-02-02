@@ -116,7 +116,7 @@ class MessageStream extends StatelessWidget {
         .collection('rooms')
         .doc(roomID)
         .collection('messages')
-        .orderBy('time')
+        .orderBy('time', descending: true)
         .snapshots()
         .asyncMap((messages) => Future.wait([for (var message in messages.docs) generateMessageInfo(message)]));
   }
@@ -131,7 +131,7 @@ class MessageStream extends StatelessWidget {
   Widget build(BuildContext context) {
     // return StreamBuilder<QuerySnapshot> (
     return StreamBuilder (
-      stream: messagesStream("1111"),
+      stream: messagesStream(ChatRoomManager().roomID),
       builder: (context, AsyncSnapshot<List<MessageInfo>> snapshot) {
         if (!snapshot.hasData) {
           return Center(
