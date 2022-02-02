@@ -71,6 +71,7 @@ class _HomePageState extends State<HomePage> {
         _createRoomWithNewRoomID();
       } else {
         ChatRoomManager().roomID = randomRoomID;
+        await _db.collection('rooms').doc(randomRoomID).set({});
         ScaffoldSnackbar.of(context).show('ID:${ChatRoomManager().roomID} のチャットルームを作成しました');
         Navigator.pushNamed(context, ChatPage.id);
       }
