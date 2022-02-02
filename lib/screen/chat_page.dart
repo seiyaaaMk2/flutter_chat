@@ -94,13 +94,45 @@ class _ChatPageState extends State<ChatPage> {
   }
 }
 
+class MessageInfo {
+  /// 表示名
+  late String name;
+  late String messageText;
+  /// メールアドレス
+  late String messageSender;
+  late Timestamp messageTime;
+
+  MessageInfo(name, messageText, messageSender, messageTime) {
+    this.name = name;
+    this.messageText = messageText;
+    this.messageSender = messageSender;
+    this.messageTime = messageTime;
+  }
+}
+
 class MessageStream extends StatelessWidget {
+  Stream<List<MessageInfo>> messagesStream(String roomID) {
+    return _db
+        .collection('rooms')
+        .doc(roomID)
+        .collection('messages')
+        .orderBy('time')
+        .snapshots()
+        .asyncMap((messages) => Future.wait([for (var message in messages.docs) generateMessageInfo(message)]));
+  }
+
+  Future<MessageInfo> generateMessageInfo(QueryDocumentSnapshot message) async {
+    var doc = await _db.collection('users').doc(message.get('sender')).get();
+    var nickName = await doc.get('name');
+    return MessageInfo(nickName, message.get('message'), message.get('sender'), message.get('time'));
+  }
+
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot> (
-      // stream: _db.collection('messages').orderBy('time', descending: true).limit(50).snapshots(),
-      stream: _db.collection('rooms').doc(ChatRoomManager().roomID).collection('messages').orderBy('time', descending: true).limit(50).snapshots(),
-      builder: (context, snapshot) {
+    // return StreamBuilder<QuerySnapshot> (
+    return StreamBuilder (
+      stream: messagesStream("1111"),
+      builder: (context, AsyncSnapshot<List<MessageInfo>> snapshot) {
         if (!snapshot.hasData) {
           return Center(
             child: CircularProgressIndicator(
@@ -109,25 +141,13 @@ class MessageStream extends StatelessWidget {
           );
         }
 
-        dynamic temp = snapshot.data;
-        final messages = temp != null ? snapshot.data!.docs : [];
         List<MessageLine> messageLines = [];
-        messages.forEach((message) {
-          final Map<String, dynamic> doc = message.data();
-          final messageText = doc['message'];
-          final messageSender = doc['sender'];
-          final messageTime = doc['time'];
-
-          final messageLine = MessageLine(
-            text: messageText,
-            sender: messageSender,
-            time: messageTime,
-            isMine: _user.email == messageSender,
-          );
-
+        snapshot.data!.forEach((messageInfo) {
+          final isMine = _user.email == messageInfo.messageSender;
+          final messageLine = MessageLine(sender: messageInfo.name, text: messageInfo.messageText, time: messageInfo.messageTime, isMine: isMine);
           messageLines.add(messageLine);
-
         });
+
 
         return Expanded(child: ListView(
           reverse: true,

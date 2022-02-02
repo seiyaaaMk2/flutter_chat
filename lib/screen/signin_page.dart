@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/screen/view/scaffold_snackbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_chat/screen/home_page.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
 
@@ -293,6 +294,7 @@ class _EmailPasswordForm extends StatefulWidget {
 
 class _EmailPasswordFormState extends State<_EmailPasswordForm> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController _nickNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -312,6 +314,14 @@ class _EmailPasswordFormState extends State<_EmailPasswordForm> {
                   'Sign in with email and password',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
+              ),
+              TextFormField(
+                controller: _nickNameController,
+                decoration: const InputDecoration(labelText: 'NickName'),
+                validator: (String? value) {
+                  if (value!.isEmpty) return 'Please enter nick name';
+                  return null;
+                },
               ),
               TextFormField(
                 controller: _emailController,
@@ -363,8 +373,15 @@ class _EmailPasswordFormState extends State<_EmailPasswordForm> {
       final User user = (await _auth.signInWithEmailAndPassword(
         email: _emailController.text,
         password: _passwordController.text,
-      ))
-          .user!;
+      )).user!;
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(_emailController.text)
+          .set({
+        'image': '',
+        'name': _nickNameController.text,
+      });
       ScaffoldSnackbar.of(context).show('${user.email} でサインインしました');
       if (user != null) {
         Navigator.pushNamed(context, HomePage.id);
