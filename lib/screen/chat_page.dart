@@ -1,12 +1,16 @@
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_chat/model/chat_room_manager.dart';
+import 'package:flutter_chat/screen/view/image_line.dart';
 import 'package:flutter_chat/screen/view/scaffold_snackbar.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import './view/message_line.dart';
 
 final _db = FirebaseFirestore.instance;
 final _auth = FirebaseAuth.instance;
+final _storage = FirebaseStorage.instance;
 User _user = _auth.currentUser!;
 
 class ChatPage extends StatefulWidget {
@@ -112,24 +116,44 @@ class _ChatPageState extends State<ChatPage> {
   }
 }
 
-class MessageInfo {
+class BaseMessageInfo {
   /// 表示名
   late String name;
-  late String messageText;
   /// メールアドレス
   late String messageSender;
+  /// 送信時間
   late Timestamp messageTime;
 
-  MessageInfo(name, messageText, messageSender, messageTime) {
+  BaseMessageInfo(name, messageSender, messageTime) {
     this.name = name;
-    this.messageText = messageText;
     this.messageSender = messageSender;
     this.messageTime = messageTime;
   }
 }
 
+class TextMessageInfo extends BaseMessageInfo {
+  /// メッセージ本文
+  late String messageText = "";
+
+  TextMessageInfo(name, messageText, messageSender, messageTime): super(name, messageSender, messageTime) {
+    this.messageText = messageText;
+  }
+}
+
+class ImageMessageInfo extends BaseMessageInfo {
+  /// 画像本体
+  late Image image = Image(
+    image: NetworkImage(
+        'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg'),
+  );
+
+  ImageMessageInfo(name, image, messageSender, messageTime) : super(name, messageSender, messageTime) {
+    this.image = image;
+  };
+}
+
 class MessageStream extends StatelessWidget {
-  Stream<List<MessageInfo>> messagesStream(String roomID) {
+  Stream<List<BaseMessageInfo>> messagesStream(String roomID) {
     return _db
         .collection('rooms')
         .doc(roomID)
@@ -139,18 +163,31 @@ class MessageStream extends StatelessWidget {
         .asyncMap((messages) => Future.wait([for (var message in messages.docs) generateMessageInfo(message)]));
   }
 
-  Future<MessageInfo> generateMessageInfo(QueryDocumentSnapshot message) async {
+  Future<BaseMessageInfo> generateMessageInfo(QueryDocumentSnapshot<Map<String, dynamic>> message) async {
+    var messageData = message.data();
     var doc = await _db.collection('users').doc(message.get('sender')).get();
     var nickName = await doc.get('name');
-    return MessageInfo(nickName, message.get('message'), message.get('sender'), message.get('time'));
+
+    bool? isImage = false;
+    if(messageData.containsKey('isImage')) {
+      isImage = await message.get('isImage');
+    }
+
+    if (isImage != null && isImage == true) {
+      final String url = await _storage.ref('images/1111/KZfDwzUJQ472TpsQjfJ9.jpg').getDownloadURL();
+      final image = new Image(image: new CachedNetworkImageProvider(url));
+      return ImageMessageInfo(nickName, image, message.get('sender'), message.get('time'));
+    } else {
+      print("👺message: " + message.get('message'));
+      return TextMessageInfo(nickName, message.get('message'), message.get('sender'), message.get('time'));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // return StreamBuilder<QuerySnapshot> (
     return StreamBuilder (
       stream: messagesStream(ChatRoomManager().roomID),
-      builder: (context, AsyncSnapshot<List<MessageInfo>> snapshot) {
+      builder: (context, AsyncSnapshot<List<BaseMessageInfo>> snapshot) {
         if (!snapshot.hasData) {
           return Center(
             child: CircularProgressIndicator(
@@ -159,10 +196,15 @@ class MessageStream extends StatelessWidget {
           );
         }
 
-        List<MessageLine> messageLines = [];
+        List<Widget> messageLines = [];
         snapshot.data!.forEach((messageInfo) {
           final isMine = _user.email == messageInfo.messageSender;
-          final messageLine = MessageLine(sender: messageInfo.name, text: messageInfo.messageText, time: messageInfo.messageTime, isMine: isMine);
+          var messageLine;
+          if (messageInfo is TextMessageInfo) {
+            messageLine = MessageLine(sender: messageInfo.name, text: messageInfo.messageText, time: messageInfo.messageTime, isMine: isMine);
+          } else if (messageInfo is ImageMessageInfo) {
+            messageLine = ImageLine(sender: messageInfo.name, image: messageInfo.image, time: messageInfo.messageTime, isMine: isMine);
+          }
           messageLines.add(messageLine);
         });
 
