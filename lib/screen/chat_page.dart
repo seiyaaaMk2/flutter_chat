@@ -1,3 +1,5 @@
+import 'dart:core';
+
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -6,6 +8,8 @@ import 'package:flutter_chat/model/chat_room_manager.dart';
 import 'package:flutter_chat/screen/view/image_line.dart';
 import 'package:flutter_chat/screen/view/scaffold_snackbar.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:io' as io;
+import 'package:image_picker/image_picker.dart';
 import './view/message_line.dart';
 
 final _db = FirebaseFirestore.instance;
@@ -24,6 +28,8 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   final TextEditingController messageTextController = TextEditingController();
   String messageText = "";
+  late io.File _image;
+  final picker = ImagePicker();
 
   @override
   void initState() {
@@ -73,6 +79,13 @@ class _ChatPageState extends State<ChatPage> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
+                  IconButton(onPressed: () async {
+                    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+                    setState(() {
+                      if (pickedFile == null) { return; }
+                      uploadFile(pickedFile.path);
+                    });
+                  }, icon: Icon(Icons.add_photo_alternate)),
                   Expanded(
                     child: TextField(
                       controller: messageTextController,
@@ -114,6 +127,25 @@ class _ChatPageState extends State<ChatPage> {
       ),
     );
   }
+
+  Future<void> uploadFile(String sourcePath) async {
+
+    var uploadFileName = "";
+    DocumentReference<Map<String, dynamic>> doc = await _db.collection('rooms').doc(ChatRoomManager().roomID).collection('messages').add({
+      'message' : "",
+      'sender' : _user.email,
+      'isImage' : true,
+      'time' : FieldValue.serverTimestamp(),
+    });
+
+    uploadFileName = doc.id;
+
+    String filePath = "images/" + ChatRoomManager().roomID + "/";
+    Reference ref = _storage.ref().child(filePath);  //保存するフォルダ
+
+    io.File file = io.File(sourcePath);
+    UploadTask task = ref.child(uploadFileName).putFile(file);
+  }
 }
 
 class BaseMessageInfo {
@@ -149,7 +181,7 @@ class ImageMessageInfo extends BaseMessageInfo {
 
   ImageMessageInfo(name, image, messageSender, messageTime) : super(name, messageSender, messageTime) {
     this.image = image;
-  };
+  }
 }
 
 class MessageStream extends StatelessWidget {
@@ -174,7 +206,9 @@ class MessageStream extends StatelessWidget {
     }
 
     if (isImage != null && isImage == true) {
-      final String url = await _storage.ref('images/1111/KZfDwzUJQ472TpsQjfJ9.jpg').getDownloadURL();
+      final fileName = message.id;
+      final filePath = "images/" + ChatRoomManager().roomID + "/" + fileName;
+      final String url = await _storage.ref(filePath).getDownloadURL();
       final image = new Image(image: new CachedNetworkImageProvider(url));
       return ImageMessageInfo(nickName, image, message.get('sender'), message.get('time'));
     } else {
