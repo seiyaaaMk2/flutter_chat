@@ -132,21 +132,22 @@ class _ChatPageState extends State<ChatPage> {
 
   Future<void> uploadFile(String sourcePath) async {
 
-    var uploadFileName = "";
-    DocumentReference<Map<String, dynamic>> doc = await _db.collection('rooms').doc(ChatRoomManager().roomID).collection('messages').add({
-      'message' : "",
-      'sender' : _user.email,
-      'isImage' : true,
-      'time' : FieldValue.serverTimestamp(),
-    });
+    // 画像のアップロードをしてからドキュメントを配置したいため、予めドキュメントIDを取得しておく
+    var uploadFileName = _db.collection('rooms').doc(ChatRoomManager().roomID).collection('messages').doc().id;
 
-    uploadFileName = doc.id;
 
     String filePath = "images/" + ChatRoomManager().roomID + "/";
     Reference ref = _storage.ref().child(filePath);  //保存するフォルダ
 
     io.File file = io.File(sourcePath);
     UploadTask task = ref.child(uploadFileName).putFile(file);
+
+    await _db.collection('rooms').doc(ChatRoomManager().roomID).collection('messages').doc(uploadFileName).set({
+      'message' : "",
+      'sender' : _user.email,
+      'isImage' : true,
+      'time' : FieldValue.serverTimestamp(),
+    });
   }
 }
 
