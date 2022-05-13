@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_chat/util/size_config.dart';
 import 'package:intl/intl.dart';
 
 class ImageLine extends StatelessWidget {
@@ -12,9 +13,9 @@ class ImageLine extends StatelessWidget {
 
   ImageLine(
       {required this.sender,
-        required this.image,
-        required this.time,
-        required this.isMine});
+      required this.image,
+      required this.time,
+      required this.isMine});
 
   String messageTime() {
     DateFormat outputFormat = DateFormat('HH:mm');
@@ -27,7 +28,7 @@ class ImageLine extends StatelessWidget {
       padding: EdgeInsets.all(10.0),
       child: Column(
         crossAxisAlignment:
-        isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: <Widget>[
           Text(
             // sender,
@@ -39,10 +40,13 @@ class ImageLine extends StatelessWidget {
           ),
           Row(
             mainAxisAlignment:
-            isMine ? MainAxisAlignment.end : MainAxisAlignment.start,
+                isMine ? MainAxisAlignment.end : MainAxisAlignment.start,
             children: <Widget>[
               Container(
-                padding: EdgeInsets.only(right: isMine ? 5.0 : 0.0, top: 10.0, left: isMine ? 0.0 : 5.0),
+                padding: EdgeInsets.only(
+                    right: isMine ? 5.0 : 0.0,
+                    top: 10.0,
+                    left: isMine ? 0.0 : 5.0),
                 alignment: Alignment.bottomCenter,
                 child: Text(
                   messageTime(),
@@ -53,26 +57,25 @@ class ImageLine extends StatelessWidget {
                 ),
               ),
               Material(
-                  borderRadius: isMine
-                      ? BorderRadius.only(
-                      topLeft: Radius.circular(30.0),
-                      bottomLeft: Radius.circular(30.0),
-                      bottomRight: Radius.circular(30.0))
-                      : BorderRadius.only(
-                      topRight: Radius.circular(30.0),
-                      bottomLeft: Radius.circular(30.0),
-                      bottomRight: Radius.circular(30.0)),
-                  elevation: 5.0,
-                  color: isMine ? Colors.lightBlueAccent : Colors.white,
+                borderRadius: isMine
+                    ? BorderRadius.only(
+                        topLeft: Radius.circular(30.0),
+                        bottomLeft: Radius.circular(30.0),
+                        bottomRight: Radius.circular(30.0))
+                    : BorderRadius.only(
+                        topRight: Radius.circular(30.0),
+                        bottomLeft: Radius.circular(30.0),
+                        bottomRight: Radius.circular(30.0)),
+                elevation: 5.0,
+                color: isMine ? Colors.lightBlueAccent : Colors.white,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                      maxWidth: SizeConfig.blockSizeHorizontal * 70),
                   child: Padding(
                     padding:
-                    EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
-                    child:
-                    // Row(
-                        // children: [
-                        image,
-                        // ],
-                  // ),
+                        EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+                    child: image,
+                  ),
                 ),
               ),
             ],
