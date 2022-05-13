@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_chat/model/chat_room_manager.dart';
 import 'package:flutter_chat/screen/view/image_line.dart';
 import 'package:flutter_chat/screen/view/scaffold_snackbar.dart';
+import 'package:flutter_chat/util/size_config.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:io' as io;
 import 'package:image_picker/image_picker.dart';
@@ -38,6 +39,7 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
+    SizeConfig().init(context);
     return Scaffold(
       appBar: AppBar(
         leading: null,
